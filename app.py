@@ -254,12 +254,22 @@ def update_note(note_id):
         update_data['password'] = generate_password_hash(note_password)
         update_data['is_locked'] = True
     
-    # Remove None values
-    update_data = {k: v for k, v in update_data.items() if v is not None}
+    # Separate set and unset operations
+    fields_to_set = {k: v for k, v in update_data.items() if v is not None}
+    fields_to_unset = {k: "" for k, v in update_data.items() if v is None}
     
+    update_ops = {}
+    if fields_to_set:
+        update_ops['$set'] = fields_to_set
+    if fields_to_unset:
+        update_ops['$unset'] = fields_to_unset
+
+    if not update_ops:
+         return jsonify(serialize_doc(notes_collection.find_one({'_id': ObjectId(note_id)}))), 200
+
     result = notes_collection.update_one(
         {'_id': ObjectId(note_id), 'user_id': user_id}, 
-        {'$set': update_data}
+        update_ops
     )
     if result.matched_count == 0:
         return jsonify({'error': 'Note not found or unauthorized'}), 404
