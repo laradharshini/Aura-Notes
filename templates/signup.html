@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Aura Notes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="auth-body-modern">
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="auth-page-wrapper">
+        <div class="auth-split-content">
+            <div class="brand-section">
+                <h1><span>Aura</span>Notes</h1>
+                <p>Aesthetic Note Taking. Simplified.</p>
+            </div>
+
+            <div class="auth-card-modern">
+                <div class="auth-toggle">
+                    <a href="/login" class="toggle-btn">Login</a>
+                    <a href="/signup" class="toggle-btn active">Sign Up</a>
+                </div>
+
+                <form id="signupForm">
+                    <div class="modern-form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="username" class="modern-input" placeholder="e.g. John Doe" required>
+                    </div>
+
+                    <div class="modern-form-group">
+                        <label>Email Address</label>
+                        <input type="email" class="modern-input" placeholder="email@example.com">
+                    </div>
+
+                    <div class="modern-form-group">
+                        <label>Password</label>
+                        <div class="modern-input-wrapper">
+                            <input type="password" id="password" class="modern-input" placeholder="••••••••" required>
+                            <button type="button" class="show-password-btn" onclick="togglePassword()">Show</button>
+                        </div>
+                    </div>
+
+                    <div id="errorMessage" class="error-text"></div>
+                    <button type="submit" class="btn-modern-primary">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const pwd = document.getElementById('password');
+            const btn = document.querySelector('.show-password-btn');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                btn.textContent = 'Hide';
+            } else {
+                pwd.type = 'password';
+                btn.textContent = 'Show';
+            }
+        }
+
+        document.getElementById('signupForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMessage');
+
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert('Account created! Please login.');
+                window.location.href = '/login';
+            } else {
+                errorMsg.textContent = result.error || 'Signup failed';
+            }
+        };
+    </script>
+</body>
+
+</html>

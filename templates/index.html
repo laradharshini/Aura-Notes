@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Notes | Aesthetic Note Taking</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <span class="gradient-text">Aura</span>Notes
+            </div>
+            <div class="header-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search notes...">
+            </div>
+            <div class="header-user-info">
+                <span>Hello, <b id="usernameDisplay">{{ username }}</b></span>
+                <button id="logoutBtn" class="btn-logout">Logout</button>
+                <button id="newNoteBtn" class="btn-primary">
+                    <i class="fas fa-plus"></i> New Note
+                </button>
+            </div>
+        </header>
+
+        <main id="notesGrid" class="notes-grid">
+            <!-- Notes will be dynamically inserted here -->
+        </main>
+    </div>
+
+    <!-- Note Modal -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <input type="text" id="noteTitle" placeholder="Title" class="modal-title-input">
+                <div class="header-actions">
+                    <button id="lockNoteBtn" class="btn-icon" title="Lock Note"><i class="fas fa-unlock"></i></button>
+                    <button id="closeModal" class="btn-icon"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="editor-toolbar">
+                    <button class="toolbar-btn" data-command="bold" title="Bold"><i class="fas fa-bold"></i></button>
+                    <button class="toolbar-btn" data-command="italic" title="Italic"><i
+                            class="fas fa-italic"></i></button>
+                    <button class="toolbar-btn" data-command="underline" title="Underline"><i
+                            class="fas fa-underline"></i></button>
+                    <button class="toolbar-btn" data-command="strikeThrough" title="Strikethrough"><i
+                            class="fas fa-strikethrough"></i></button>
+                    <div class="toolbar-separator"></div>
+                    <button class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List"><i
+                            class="fas fa-list-ul"></i></button>
+                    <button class="toolbar-btn" data-command="insertOrderedList" title="Numbered List"><i
+                            class="fas fa-list-ol"></i></button>
+                    <div class="toolbar-separator"></div>
+                    <button class="toolbar-btn" data-command="justifyLeft" title="Align Left"><i
+                            class="fas fa-align-left"></i></button>
+                    <button class="toolbar-btn" data-command="justifyCenter" title="Align Center"><i
+                            class="fas fa-align-center"></i></button>
+                    <button class="toolbar-btn" data-command="justifyRight" title="Align Right"><i
+                            class="fas fa-align-right"></i></button>
+                </div>
+
+                <div id="noteContent" class="modal-content-editable" contenteditable="true"
+                    data-placeholder="Start typing your note here..."></div>
+
+                <div class="tags-input-container">
+                    <i class="fas fa-tags"></i>
+                    <input type="text" id="noteTags" placeholder="Add tags (separated by commas)..." class="tags-input">
+                </div>
+
+                <div class="expiry-container">
+                    <div class="expiry-selector">
+                        <i class="fas fa-history"></i>
+                        <select id="expirySelect" class="modern-select">
+                            <option value="never">Never Expire</option>
+                            <option value="1">1 Day</option>
+                            <option value="7">7 Days</option>
+                            <option value="custom">Custom Date</option>
+                        </select>
+                        <button id="clearExpiryBtn" class="btn-clear-expiry" title="Remove Expiry">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
+                    </div>
+                    <div id="customExpiryContainer" class="custom-expiry" style="display: none;">
+                        <input type="datetime-local" id="customExpiryDate" class="modern-input-sm">
+                        <span class="hint-text">(24-hour format)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="color-picker">
+                    <button class="color-opt active" data-color="#ffffff" style="background: #ffffff;"></button>
+                    <button class="color-opt" data-color="#ffadad" style="background: #ffadad;"></button>
+                    <button class="color-opt" data-color="#ffd6a5" style="background: #ffd6a5;"></button>
+                    <button class="color-opt" data-color="#fdffb6" style="background: #fdffb6;"></button>
+                    <button class="color-opt" data-color="#caffbf" style="background: #caffbf;"></button>
+                    <button class="color-opt" data-color="#9bf6ff" style="background: #9bf6ff;"></button>
+                    <button class="color-opt" data-color="#a0c4ff" style="background: #a0c4ff;"></button>
+                    <button class="color-opt" data-color="#bdb2ff" style="background: #bdb2ff;"></button>
+                    <button class="color-opt" data-color="#ffc6ff" style="background: #ffc6ff;"></button>
+                </div>
+                <div id="lockStatus" class="lock-status-indicator" style="display: none;">
+                    <i class="fas fa-lock"></i> Locked
+                </div>
+                <button id="saveNote" class="btn-save">Save changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unlock Modal -->
+    <div id="unlockModal" class="modal">
+        <div class="modal-content glass auth-card-mini">
+            <h3>Locked Note</h3>
+            <p>Please enter the password to view this note.</p>
+            <div class="modern-form-group">
+                <input type="password" id="unlockPassword" class="modern-input" placeholder="Password">
+                <p id="unlockError" class="error-text" style="display: none;"></p>
+            </div>
+            <div class="modal-footer-mini">
+                <button id="cancelUnlock" class="btn-logout">Cancel</button>
+                <button id="confirmUnlock" class="btn-modern-primary">Unlock</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Set Password Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content glass auth-card-mini">
+            <h3>Lock Note</h3>
+            <p>Set a password to protect this note.</p>
+            <div class="modern-form-group">
+                <input type="password" id="notePasswordInput" class="modern-input" placeholder="Set Password">
+                <p class="hint-text">Leave blank to keep unlocked.</p>
+            </div>
+            <div class="modal-footer-mini">
+                <button id="cancelPassword" class="btn-logout">Cancel</button>
+                <button id="confirmPassword" class="btn-modern-primary">Set Password</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
