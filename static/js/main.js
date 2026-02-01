@@ -169,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
             noteContent.innerHTML = note.content;
             noteTags.value = (note.tags || []).join(', ');
             selectedColor = note.color;
-            isCurrentlyLocked = note.is_locked;
 
             if (note.expires_at) {
                 expirySelect.value = 'custom';
@@ -184,8 +183,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 expirySelect.value = 'never';
                 customExpiryContainer.style.display = 'none';
             }
+            updateClearExpiryVisibility();
 
-            updateLockUI();
+            isCurrentlyLocked = note.is_locked || false;
         } else {
             currentNoteId = null;
             noteTitle.value = '';
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
             isCurrentlyLocked = false;
             expirySelect.value = 'never';
             customExpiryContainer.style.display = 'none';
-            updateLockUI();
+            updateClearExpiryVisibility();
         }
 
         updateColorSelection(selectedColor);
@@ -215,9 +215,31 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const clearExpiryBtn = document.getElementById('clearExpiryBtn');
+
+    const updateClearExpiryVisibility = () => {
+        if (expirySelect.value !== 'never') {
+            clearExpiryBtn.style.display = 'flex';
+        } else {
+            clearExpiryBtn.style.display = 'none';
+        }
+    };
+
+    expirySelect.addEventListener('change', () => {
+        if (expirySelect.value === 'custom') {
+            customExpiryContainer.style.display = 'block';
+            if (!customExpiryDate.value) {
+                setDefaultExpiryDate();
+            }
+        } else {
+            customExpiryContainer.style.display = 'none';
+        }
+        updateClearExpiryVisibility();
+    });
+
     clearExpiryBtn.addEventListener('click', () => {
         expirySelect.value = 'never';
         customExpiryContainer.style.display = 'none';
+        updateClearExpiryVisibility();
         // Force update of health indicator if it's currently saving
     });
 
